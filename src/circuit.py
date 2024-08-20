@@ -1,3 +1,8 @@
+# ==============================================================================
+# Copyright 2023-* Marco Sciorilli. All Rights Reserved.
+# Copyright 2023-* QRC @ Technology Innovation Institute of Abu Dhabi. All Rights Reserved.
+# ==============================================================================
+
 import math
 import networkx as nx
 import numpy as np

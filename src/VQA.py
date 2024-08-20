@@ -1,3 +1,10 @@
+# ==============================================================================
+# Copyright 2023-* Marco Sciorilli. All Rights Reserved.
+# Copyright 2023-* QRC @ Technology Innovation Institute of Abu Dhabi. All Rights Reserved.
+# ==============================================================================
+
+
+
 import numpy as np
 from time import time
 import math
@@ -16,13 +23,11 @@ class VQA(object):
         self.hot_start_state = None
 
 
-    def set_circuit(self, qubits=None, layer=None, entanglement=None, rotation=None, connectivity=None,compression=None, hot_solution =None, maps=None, identity_start=True, seed=0):
+    def set_circuit(self, qubits=None, layer=None, entanglement=None, rotation=None, connectivity=None, identity_start=True, seed=0):
         self.qubits = qubits
         self.layer = layer
         self.identity_start = identity_start
         circuit = Circuit(qubits, layer, entanglement, rotation, connectivity, name_library=self.name_library, device=self.device)
-        if hot_solution is not None:
-            self.hot_start_state = circuit.prepare_state(compression,maps, data=hot_solution)
         if identity_start:
             circuit.identity_start(seed)
         else:
@@ -30,7 +35,7 @@ class VQA(object):
         self.circuit = circuit.get_circuit()
         if self.name_library == 'qibo':
             self.num_params = len(self.circuit.get_parameters(format='flatlist'))
-        elif self.name_library == 'qiskit' or self.name_library == 'qiskit_IONQ':
+        elif self.name_library == 'qiskit':
             self.num_params = self.circuit.num_parameters
         elif self.name_library == 'tensorly-quantum':
             self.num_params = len([circuit.state_dict()[i].item() for i in circuit.state_dict()])
@@ -59,10 +64,7 @@ class VQA(object):
             if self.identity_start:
                 initial_state = np.array(self.circuit.get_parameters(format='flatlist'))
             else:
-                if self.hot_start_state is not None:
-                    initial_state = np.random.normal(0, 0.1, self.num_params)
-                else:
-                    initial_state = np.random.uniform(-1, 1, self.num_params)*np.pi
+                initial_state = np.random.uniform(-1, 1, self.num_params)*np.pi
 
             bounds = [(-np.pi, np.pi) for i in range(len(initial_state))]
         gradient_free_optimizers_list = ['HillClimbing', 'StochasticHillClimbing', 'RepulsingHillClimbing',
@@ -163,7 +165,7 @@ class VQA(object):
                 else:
                     pass
                     # bounds = [(0, 4*np.pi) for i in range(len(initial_state))]
-                options = {'maxiter':1000000}
+                options = {'maxiter':100000}
                 my_time = time()
                 result, parameters, extra = newtonian(self.loss.get_loss(self.loss_shape), initial_state,
                                                                                     method=method, jac=self.loss.get_loss_gradient(self.loss_shape),
@@ -174,8 +176,8 @@ class VQA(object):
                 timing = time() - my_time
                 epochs =extra['nit']
                 final_solution =  np.squeeze(self.loss.return_final_solution())
-                loss_ratio = self.loss.get_ratio()
-                best_loss_value= self.loss.best_loss_value
+                loss_ratio = self.loss.get_ratio().tolist()[0]
+                best_loss_value= self.loss.best_loss_value.tolist()[0]
 
         return  initial_state, parameters, epochs, timing, loss_ratio, best_loss_value, final_solution
 

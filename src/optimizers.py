@@ -1,3 +1,8 @@
+# ==============================================================================
+# Copyright 2023-* Marco Sciorilli. All Rights Reserved.
+# Copyright 2023-* QRC @ Technology Innovation Institute of Abu Dhabi. All Rights Reserved.
+# ==============================================================================
+
 import numpy as np
 
 def gradient_free_optimizer(optimizer_name, search_space, n_iter, loss_function):

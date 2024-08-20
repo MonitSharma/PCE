@@ -1,3 +1,9 @@
+# ==============================================================================
+# Copyright 2023-* Marco Sciorilli. All Rights Reserved.
+# Copyright 2023-* QRC @ Technology Innovation Institute of Abu Dhabi. All Rights Reserved.
+# ==============================================================================
+
+
 from math import ceil
 from time import time
 import networkx as nx
@@ -224,10 +230,6 @@ class Loss(object):
         else:
             penalization = ((self.total_weight) / 2 + (self.minimum_spanning_tree) / 4) * (
                     penalization / self.spins_number) ** 2 * self.hyperparameters[1]
-        if loss + penalization < self.best_loss_value:
-            self.loss_ratio = penalization / loss
-            self.best_loss_value = loss + penalization
-            self.iteration_expets = expects
 
 
         return (loss+ penalization)

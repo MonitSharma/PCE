@@ -1,3 +1,8 @@
+# ==============================================================================
+# Copyright 2023-* Marco Sciorilli. All Rights Reserved.
+# Copyright 2023-* QRC @ Technology Innovation Institute of Abu Dhabi. All Rights Reserved.
+# ==============================================================================
+
 from copy import deepcopy
 from typing import Optional, Tuple, List
 import networkx as nx

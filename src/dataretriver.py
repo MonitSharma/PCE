@@ -1,3 +1,10 @@
+# ==============================================================================
+# Copyright 2023-* Marco Sciorilli. All Rights Reserved.
+# Copyright 2023-* QRC @ Technology Innovation Institute of Abu Dhabi. All Rights Reserved.
+# ==============================================================================
+
+
+
 from typing import Tuple
 import qibo
 import math
@@ -9,8 +16,8 @@ import os
 from .newgraph import RandomGraphs
 from .VQA import VQA
 from .measurement import Measurement
-from .utilities import solve_quadratic,_get_exact_solution,_round, _obj_value, local_search, _cut_value
-from .datamanager import insert_value_table, read_data
+from .utilities import solve_quadratic,_get_exact_solution,_round, _obj_value, local_search
+from .datamanager import insert_value_table
 
 class Benchmarker(object):
 
@@ -126,8 +133,6 @@ class Benchmarker(object):
         pool.close()
         pool.join()
 
-
-
     def _gpu_process(self, queue, instance, trial, graph_dict, layer) -> None:
         gpu_id = queue.get()
         if self.name_backend =='tensorflow':
@@ -203,35 +208,17 @@ class Benchmarker(object):
             instance_name = graph[0]
             graph = graph[1]
             adj_matrix = RandomGraphs._graph_to_dict(graph)
-        result_exact, hot_start = _get_exact_solution(self.loss_name,graph)
+        result_exact, hot_start = _get_exact_solution(graph)
         if result_exact == 0.0:
             return
 
         if self.kind == 'VQA':
             np.random.seed(trial + instance)
-            if self.method == 'exact' or 'shots-simulation':
-                if self.state_preparation:
-                    import json
-
-                    # temporary_approx = read_data('baseline_100', 'baseline_100', ['solution_local'],
-                    #                              {'instance': instance_name, 'trial': trial})
-                    # solution_local = json.loads(temporary_approx[0][0])
-                    # result_exact = _cut_value(solution_local, adj_matrix)
-                    # # print(instance, trial, _cut_value(solution_local, adj_matrix))
-                    # solution_local = solution_local * np.random.uniform(0, 1, 100)
-                    # solution_local = np.random.uniform(0, 1, self.spins_number)
-                    # print(solution_local)
-                    solution_local =hot_start
-                    solution_local = solution_local * np.random.uniform(0, 1, self.spins_number)
-
-                else:
-                    solution_local = None
+            if self.method == 'exact':
                 update_args = {'kind':self.kind, 'method':self.method,'instance':instance_name, 'trial':trial,'layer':layer,'spins_number':self.spins_number,'optimization':self.optimization,'activation_function_name':self.activation_function,'compression':self.compression,'pauli_string_length':self.pauli_string_length,'graph_kind':self.graph_kind,'initial_parameters':self.initial_parameters,'hyperparameters':self.hyperparameters, 'entanglement':self.entanglement, 'rotation':self.rotation,'connectivity':self.connectivity,'loss_name':self.loss_name, 'result_exact': result_exact, 'database_name': self.database_name, 'time':time()}
                 result = VQA( name_library=self.name_library,  name_backend=self.name_backend, device=device)
-                result.set_circuit(self.qubits, layer, self.entanglement, self.rotation, self.connectivity, self.compression, solution_local,maps=self.expectation_map, identity_start=True,seed= trial + instance)
+                result.set_circuit(self.qubits, layer, self.entanglement, self.rotation, self.connectivity, self.compression, seed= trial + instance)
                 result.set_loss(loss_shape=self.loss_name, graph=graph, update_args=update_args, update=self.update, shots = shot)
-
-
                 result.set_measurement(expectation_map=self.expectation_map, expectations_method=self.expectation_method, encoding_args=[self.pauli_string_length, self.compression, self.lower_order_terms, self.shuffle, self.same_letter, self.ratio_total_words, trial+instance], case=self.method)
                 result = result.minimize(method=self.optimization, initial_state=self.initial_parameters)
 
@@ -250,13 +237,11 @@ class Benchmarker(object):
             self.loss_value = result[5]
             unrounded_solution = result[6].tolist()
             solution_raw = [_round(i) for i in unrounded_solution]
-            max_energy_raw = _obj_value(solution_raw, problem_name=self.loss_name, adjacency_matrix=adj_matrix)
+            max_energy_raw = _obj_value(solution_raw, adjacency_matrix=adj_matrix)
             energy_ratio_raw = max_energy_raw / result_exact
 
-            max_energy_local, solution_local = local_search(solution_raw, problem_name=self.loss_name,
-                                                            adjacency_matrix=adj_matrix)
+            max_energy_local, solution_local = local_search(solution_raw, adjacency_matrix=adj_matrix)
             solution_local = list(solution_local)
-
             energy_ratio_local = max_energy_local / result_exact
 
 

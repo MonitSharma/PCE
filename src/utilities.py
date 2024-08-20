@@ -1,3 +1,9 @@
+# ==============================================================================
+# Copyright 2023-* Marco Sciorilli. All Rights Reserved.
+# Copyright 2023-* QRC @ Technology Innovation Institute of Abu Dhabi. All Rights Reserved.
+# ==============================================================================
+
+
 from typing import Tuple
 import math
 import MQLib
@@ -10,10 +16,9 @@ from .datamanager import connect_database,create_table
 def _get_exact_solution( problem=None):
     np.random.seed(int(time()))
     instance = MQLib.Instance('M', nx.to_numpy_array(problem))
-    # def cb_fun(spins):
-    #     #print("New solution = %s" % spins)
-    #     return 1
-    result = MQLib.runHeuristic('BURER2002', instance, 10 )#, cb_fun)
+    def cb_fun(spins):
+        return 1
+    result = MQLib.runHeuristic('BURER2002', instance, 10, cb_fun)
     max_energy = result['objval']
     result_exact = max_energy
     return result_exact, result['solution']
