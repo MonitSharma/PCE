@@ -62,27 +62,35 @@ Before building MQLib, ensure you have the following tools installed on your sys
 
 ##### Linux/macOS:
 1. Install the required tools using your package manager:
+```
    sudo apt update (For Ubuntu/Debian)
    sudo apt install build-essential git
-
+```
    Or for macOS (using Homebrew):
+```   
    brew install gcc make git
+```
 
 ##### Windows:
 Install a Unix-like environment such as MSYS2 or Cygwin:
 - For MSYS2:
+```
   pacman -Syu
   pacman -S base-devel git
-- For Cygwin:
-  Ensure gcc-g++, make, git, findutils, and sed are installed during setup.
+```
 
+- For Cygwin:
+```
+  Ensure gcc-g++, make, git, findutils, and sed are installed during setup.
+```
 ---
 
 #### Step 3: Build the Project
 
 1. Run the make command to build the project:
+```
    make
-
+```
 2. If successful, the following files will be created in the bin directory:
    - Executable: bin/MQLib
    - Library: bin/MQLib.a
@@ -92,7 +100,9 @@ Install a Unix-like environment such as MSYS2 or Cygwin:
 #### Step 4: Verify the Installation
 
 1. Test the executable by running:
+```
    ./bin/MQLib
+```
 
 2. If the output confirms the library's functionality, the installation is complete.
 
